@@ -1,3 +1,4 @@
+import io
 import os
 import subprocess
 
@@ -48,13 +49,30 @@ def execute_getMaxFreqs(pathSoundFile):
 
     #concatenate files
 
-    #subprocess.Popen(r"sox.exe")
 
-    #compress files
 
-    with open(pathSoundFile, "rb") as test_freqs:
+    list_Samples_Freqs = os.listdir("Sample_freqs")
 
-        test_freqs.read()
+    with open("Test\\test.freqs", "rb") as test_freqs:
+
+        tf = test_freqs.read()
+
+        for i in list_Samples_Freqs:
+
+            with open("Sample_freqs\\" + i, "rb") as sample_freqs:
+
+                sf = sample_freqs.read()
+
+                with open("Concat_files\\" + "test.wav" + i, "wb") as end_file:
+
+                    aux = bytes(tf) + bytes(sf)
+
+
+                    end_file.write(aux)
+
+
+
+    # compress files
 
         
 
