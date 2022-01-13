@@ -1,3 +1,4 @@
+import gzip
 import io
 import os
 import subprocess
@@ -19,15 +20,14 @@ def execute_getMaxFreqs(pathSoundFile):
 
     subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", "Test\\test.freqs", pathSoundFile]) #gets freqs for all the test file
 
-    path = "Sample_freqs"
+    path_sf = "Sample_freqs"
 
     # Check whether the specified path exists or not
-    isExist = os.path.exists(path)
+    isExist = os.path.exists(path_sf)
 
     if not isExist:
         # Create a new directory because it does not exist
-        os.makedirs(path)
-        print("The new directory is created!")
+        os.makedirs(path_sf)
 
     list_Samples = os.listdir("Samples")
 
@@ -49,6 +49,15 @@ def execute_getMaxFreqs(pathSoundFile):
 
     #concatenate files
 
+    path_cf = "Concat_files"
+
+    # Check whether the specified path exists or not
+    isExist = os.path.exists(path_cf)
+
+    if not isExist:
+        # Create a new directory because it does not exist
+        os.makedirs(path_cf)
+
 
 
     list_Samples_Freqs = os.listdir("Sample_freqs")
@@ -63,7 +72,7 @@ def execute_getMaxFreqs(pathSoundFile):
 
                 sf = sample_freqs.read()
 
-                with open("Concat_files\\" + "test.wav" + i, "wb") as end_file:
+                with open("Concat_files\\" + "test.freqs" + "_"+ i, "wb") as end_file:
 
                     aux = bytes(tf) + bytes(sf)
 
@@ -73,6 +82,70 @@ def execute_getMaxFreqs(pathSoundFile):
 
 
     # compress files
+
+    path_cssf = "Compressed_files"
+
+    # Check whether the specified path exists or not
+    isExist = os.path.exists(path_cssf)
+
+    if not isExist:
+        # Create a new directory because it does not exist
+        os.makedirs(path_cssf)
+
+    list_Concat_Files = os.listdir("Concat_files")
+
+    for i in list_Concat_Files:
+
+        with open("Concat_files\\" + i, "rb") as file_uncompressed:
+
+            cf = file_uncompressed.read()
+
+        fc = gzip.open('Compressed_concat_files\\' + i, 'wb')
+        fc.write(cf)
+        fc.close()
+
+    for i in list_Samples_Freqs:
+
+        with open("Sample_freqs\\" + i, "rb") as file_uncompressed:
+
+            cf = file_uncompressed.read()
+
+        fc = gzip.open('Compressed_files\\' + i, 'wb')
+        fc.write(cf)
+        fc.close()
+
+    with open("Test\\test.freqs", "rb") as file_uncompressed:
+
+        cf = file_uncompressed.read()
+
+    fc = gzip.open('Compressed_files\\test_freqs', 'wb')
+    fc.write(cf)
+    fc.close()
+
+
+def NCD():
+
+    compr_files = os.listdir("Compressed_concat_files")
+
+    for i in compr_files:
+
+        aux = i.split("_")
+
+        first_file = aux[0]
+        second_file = aux[1]
+
+        #look for them in compressed_files and check their size
+
+
+
+
+
+
+
+
+
+
+
 
         
 
@@ -96,6 +169,8 @@ if __name__ == '__main__':
     path = "Test\\" + file_name
 
     execute_getMaxFreqs(path)
+
+    NCD()
 
     #copy /b sample01.wav + sample02.wav a.wav
 
