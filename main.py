@@ -2,7 +2,7 @@ import os
 import subprocess
 
 #subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-nf", "getMaxFreqs\\src\\test.wav"])
-
+import wave
 
 
 def execute_getMaxFreqs(pathSoundFile):
@@ -16,8 +16,7 @@ def execute_getMaxFreqs(pathSoundFile):
 
 
 
-    subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", "Test\\test.freqs", pathSoundFile]) #creates the frquencies file
-
+    subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", "Test\\test.freqs", pathSoundFile]) #gets freqs for all the test file
 
     path = "Sample_freqs"
 
@@ -31,9 +30,8 @@ def execute_getMaxFreqs(pathSoundFile):
 
     list_Samples = os.listdir("Samples")
 
-    print(list_Samples)
 
-    for i in list_Samples:
+    for i in list_Samples: #gets freqs for all the sample files
 
         #print(i)
 
@@ -47,6 +45,20 @@ def execute_getMaxFreqs(pathSoundFile):
         sample_file = "Samples\\" + i
 
         subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", destiny_file , sample_file]) #erro
+
+    #concatenate files
+
+    #subprocess.Popen(r"sox.exe")
+
+    #compress files
+
+    with open(pathSoundFile, "rb") as test_freqs:
+
+        test_freqs.read()
+
+        
+
+
 
 
 
@@ -66,5 +78,8 @@ if __name__ == '__main__':
     path = "Test\\" + file_name
 
     execute_getMaxFreqs(path)
+
+    #copy /b sample01.wav + sample02.wav a.wav
+
 
 
