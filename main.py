@@ -1,10 +1,6 @@
 import gzip
-import io
 import os
 import subprocess
-
-#subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-nf", "getMaxFreqs\\src\\test.wav"])
-import wave
 
 
 def execute_getMaxFreqs(pathSoundFile):
@@ -15,8 +11,6 @@ def execute_getMaxFreqs(pathSoundFile):
     [-ds downSampling]
     [-nf nFreqs]
     AudioFile'''
-
-
 
     subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", "Test\\test.freqs", pathSoundFile]) #gets freqs for all the test file
 
@@ -34,21 +28,16 @@ def execute_getMaxFreqs(pathSoundFile):
 
     for i in list_Samples: #gets freqs for all the sample files
 
-        #print(i)
-
         newi = i.split('.')
         newi = newi[0]
-        #str(newi)
 
         destiny_file = "Sample_freqs\\" + newi + ".freqs"
 
-        #print(destiny_file)
         sample_file = "Samples\\" + i
 
         subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", destiny_file , sample_file]) #erro
 
     #concatenate files
-
     path_cf = "Concat_files"
 
     # Check whether the specified path exists or not
@@ -79,10 +68,7 @@ def execute_getMaxFreqs(pathSoundFile):
 
                     end_file.write(aux)
 
-
-
     # compress files
-
     path_cssf = "Compressed_files"
 
     # Check whether the specified path exists or not
@@ -118,50 +104,37 @@ def execute_getMaxFreqs(pathSoundFile):
 
         cf = file_uncompressed.read()
 
-    fc = gzip.open('Compressed_files\\test_freqs', 'wb')
+    fc = gzip.open('Compressed_files\\test.freqs', 'wb')
     fc.write(cf)
     fc.close()
 
 
 def NCD():
 
-    compr_files = os.listdir("Compressed_concat_files")
+    compr_concat_files = os.listdir("Compressed_concat_files")
 
-    for i in compr_files:
+    ncd_list = []
+
+    for i in compr_concat_files:
 
         aux = i.split("_")
 
         first_file = aux[0]
         second_file = aux[1]
 
-        #look for them in compressed_files and check their size
+        concat_size = os.path.getsize("Compressed_concat_files\\" + i)
 
+        first_file_size = os.path.getsize("Compressed_files\\" + first_file)
+        second_file_size = os.path.getsize("Compressed_files\\" + second_file)
 
+        ncd = (concat_size - min(first_file_size, second_file_size)) / max(first_file_size, second_file_size)
 
+        ncd_list.append([ncd, first_file,second_file])
 
+    ncd_list = sorted(ncd_list, key = lambda x: x[0])
 
+    return ncd_list[0]
 
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-    #subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-v", pathSoundFile])
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
     file_name = "test.wav" #will be passed as arg by terminal
@@ -170,9 +143,10 @@ if __name__ == '__main__':
 
     execute_getMaxFreqs(path)
 
-    NCD()
+    ncd = NCD()
 
-    #copy /b sample01.wav + sample02.wav a.wav
+    print(ncd) #i dont understand why the bit size of the files varies
+
 
 
 
