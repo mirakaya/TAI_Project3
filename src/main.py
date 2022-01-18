@@ -15,7 +15,8 @@ def execute_getMaxFreqs(pathSoundFile):
     AudioFile'''
 
     test_name = pathSoundFile.split("/")[-1].split(".")[0]
-    subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", "Test\\"+test_name+".freqs", pathSoundFile], shell=True, stdout=subprocess.PIPE) #gets freqs for all the test file
+    subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", "Test\\test.freqs",
+                      pathSoundFile])  # gets freqs for all the test file
 
     path_sf = "Sample_freqs"
 
@@ -36,7 +37,9 @@ def execute_getMaxFreqs(pathSoundFile):
 
         sample_file = "Samples\\" + i
 
-        subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", destiny_file , sample_file], shell=True, stdout=subprocess.PIPE) #erro
+        subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", destiny_file,
+                          sample_file])  # gets freqs for all the test file
+        #subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", destiny_file , sample_file], shell=True, stdout=subprocess.PIPE) #erro
 
 def concatenate(list_Samples_Freqs):
     #concatenate files
@@ -148,9 +151,18 @@ if __name__ == '__main__':
 
     test_file = test_path.split("/")[-1]
     if test_file:
-        #execute_getMaxFreqs(test_path)
+        execute_getMaxFreqs(test_path)
+
+
+        list_Samples = os.listdir("Samples")
+
+
+
 
         list_Samples_Freqs = os.listdir("Sample_freqs")
+
+
+
         concatenate(list_Samples_Freqs)
         compress(list_Samples_Freqs)
 

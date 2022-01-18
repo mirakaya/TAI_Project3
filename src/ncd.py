@@ -1,3 +1,5 @@
+import os
+
 class NCD:
     def __init__(self) -> None:
         pass
