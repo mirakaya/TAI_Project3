@@ -7,6 +7,7 @@ import subprocess
 import time
 import sys
 import zipfile
+import zlib
 
 class Shazam:
     def __init__(self, test_file, compress_type):
@@ -123,6 +124,8 @@ class Shazam:
             self.compress_bz2(list_Samples_Freqs, list_Concat_Files)
         elif _type == 'zip':
             self.compress_zip(list_Samples_Freqs, list_Concat_Files)
+        elif _type == 'zlib':
+            self.compress_zlib(list_Samples_Freqs, list_Concat_Files)
 
 
     def compress_gzip(self, list_Samples_Freqs, list_Concat_Files):
@@ -153,6 +156,25 @@ class Shazam:
         with open("Test/"+test_name+".freqs", mode="rb") as fin, bz2.open('Compressed_files/'+test_name+'.freqs', "wb") as fout:
             fout.write(fin.read())
 
+    def compress_zlib(self, list_Samples_Freqs, list_Concat_Files):
+        for i in list_Concat_Files:
+            file = open("Concat_files/" + i, "rb")
+            compressed = zlib.compress(file.read())
+            with open('Compressed_concat_files/' + i, "wb") as fw:
+                fw.write(compressed)
+                
+        for i in list_Samples_Freqs:
+            file = open("Sample_freqs/" + i, "rb")
+            compressed = zlib.compress(file.read())
+            with open('Compressed_files/' + i, "wb") as fw:
+                fw.write(compressed)
+        
+        test_name = self.test_file.split(".")[0]
+        for i in list_Concat_Files:
+            file = open("Test/"+test_name+".freqs", "rb")
+            compressed = zlib.compress(file.read())
+            with open('Compressed_files/' + test_name + '.freqs', "wb") as fw:
+                fw.write(compressed)
 
     def compress_zip(self, list_Samples_Freqs, list_Concat_Files):
         for i in list_Concat_Files:
