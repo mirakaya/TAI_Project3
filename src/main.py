@@ -108,22 +108,24 @@ class Shazam:
         if not isExist:
             os.makedirs(path_cssf)
 
-        self.cleanPath("Compressed_concat_files")
+
         self.cleanPath("Compressed_files")
 
         list_Concat_Files = os.listdir("Concat_files")
 
         if not os.path.exists('Compressed_concat_files'):
             os.makedirs('Compressed_concat_files')
-        
+
+        self.cleanPath("Compressed_concat_files")
+
         if _type == 'gzip':
             self.compress_gzip(list_Samples_Freqs, list_Concat_Files)
         elif _type == 'lzma':
             self.compress_lzma(list_Samples_Freqs, list_Concat_Files)
         elif _type == 'bz2':
             self.compress_bz2(list_Samples_Freqs, list_Concat_Files)
-        elif _type == 'zip':
-            self.compress_zip(list_Samples_Freqs, list_Concat_Files)
+        #elif _type == 'zip':
+        #    self.compress_zip(list_Samples_Freqs, list_Concat_Files)
         elif _type == 'zlib':
             self.compress_zlib(list_Samples_Freqs, list_Concat_Files)
 
@@ -176,7 +178,7 @@ class Shazam:
             with open('Compressed_files/' + test_name + '.freqs', "wb") as fw:
                 fw.write(compressed)
 
-    def compress_zip(self, list_Samples_Freqs, list_Concat_Files):
+    '''def compress_zip(self, list_Samples_Freqs, list_Concat_Files): #not working
         for i in list_Concat_Files:
             with open("Concat_files/" + i, mode="rb") as fin, zipfile.open('Compressed_concat_files/' + i, "wb") as fout:
                 fout.write(fin.read())
@@ -188,7 +190,7 @@ class Shazam:
         test_name = self.test_file.split(".")[0]
         with open("Test/" + test_name + ".freqs", mode="rb") as fin, zipfile.open('Compressed_files/' + test_name + '.freqs',
                                                                             "wb") as fout:
-            fout.write(fin.read())
+            fout.write(fin.read())'''
 
 
     def compress_lzma(self, list_Samples_Freqs, list_Concat_Files):
@@ -235,7 +237,8 @@ class Shazam:
         ncd_list = sorted(ncd_list, key = lambda x: x[0])
         """for i, el in enumerate(ncd_list[:5]):
             print("\n{} : {} - {}\n".format(i+1, el[2], el[0]))"""
-        return ncd_list[0]
+        return ncd_list
+
 
 
 if __name__ == '__main__':
@@ -243,21 +246,57 @@ if __name__ == '__main__':
 
     try:
         test_path = sys.argv[1]
+        compressor = sys.argv[2]
+
 
     except Exception as err:
-        print("Usage: python3 src/main.py Test/<test file>")
+        print("Usage: python3 src/main.py Test/<test file> compressor")
+        print("The compressor must be either all, lzma, gzip, bz2 or zlib")
         sys.exit()
 
     begin = time.time()
     test_file = test_path.split("/")[-1]
-    if test_file:
-        sha = Shazam(test_file, "lzma")
+    if test_file and compressor != "all":
+        sha = Shazam(test_file, compressor)
         res = sha.run()
 
-        print("Result: {}".format(res))
+        print("Result: {}".format(res[0]))
         print("Time: {} sec".format(time.time() - begin))
-
         # Clean paths
         paths = ["Compressed_concat_files", "Concat_files", "Compressed_files"]
         for p in paths:
             sha.cleanPath(p)
+
+    elif test_file and compressor == "all":
+
+        list_compressors = ["lzma","gzip","bz2","zlib"]
+
+        dict_results = {}
+        for compressor in list_compressors:
+            sha = Shazam(test_file, compressor)
+            res = sha.run()
+
+            aux_count = 0
+
+            for i in res:
+
+                aux_name = i[1] +"_" +  i[2]
+
+                if aux_name not in dict_results.keys():
+                    dict_results[aux_name] = aux_count
+                else:
+                    dict_results[aux_name] += aux_count
+
+                aux_count += 1
+
+        result = min(dict_results, key=dict_results.get)
+
+
+        print("Result: {}".format(result.split("_")))
+        print("Time: {} sec".format(time.time() - begin))
+        # Clean paths
+        paths = ["Compressed_concat_files", "Concat_files", "Compressed_files"]
+        for p in paths:
+            sha.cleanPath(p)
+
+
