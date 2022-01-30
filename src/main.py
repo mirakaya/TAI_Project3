@@ -1,3 +1,4 @@
+import argparse
 import bz2
 import gzip
 import lzma
@@ -10,9 +11,10 @@ import zipfile
 import zlib
 
 class Shazam:
-    def __init__(self, test_file, compress_type):
+    def __init__(self, test_file, compress_type, test_dir):
         self.test_file = test_file
         self.compress_type = compress_type
+        self.test_dir = test_dir
 
     def run(self):
         self.execute_getMaxFreqs()
@@ -37,11 +39,11 @@ class Shazam:
         [-nf nFreqs]
         AudioFile'''
 
-        test_path = "Test\\"+self.test_file
+        test_path = self.test_dir+'\\'+self.test_file
         test_name = self.test_file.split(".")[0]
         """subprocess.Popen([r"getMaxFreqs\bin\GetMaxFreqs.exe ", "-w", "Test\\test.freqs",     
                         test_path])  # gets freqs for all the test file"""
-        subprocess.Popen([r"getMaxFreqs/bin/GetMaxFreqs.exe", "-w", "Test\\"+test_name+".freqs",
+        subprocess.Popen([r"getMaxFreqs/bin/GetMaxFreqs.exe", "-w", self.test_dir+'\\'+test_name+".freqs",
                         test_path], stdout=subprocess.PIPE)  # gets freqs for all the test file
 
         path_sf = "Sample_freqs"
@@ -83,7 +85,7 @@ class Shazam:
         self.cleanPath("Concat_files")
 
         test_name = self.test_file.split(".")[0]
-        with open("Test/"+test_name+".freqs", "rb") as test_freqs:
+        with open(self.test_dir+'/'+test_name+".freqs", "rb") as test_freqs:
             tf = test_freqs.read()
 
             for i in list_Samples_Freqs:
@@ -140,7 +142,7 @@ class Shazam:
                 fout.write(fin.read())
 
         test_name = self.test_file.split(".")[0]
-        with open("Test/" + test_name + ".freqs", mode="rb") as fin, gzip.open('Compressed_files/' + test_name + '.freqs',
+        with open(self.test_dir+'/' + test_name + ".freqs", mode="rb") as fin, gzip.open('Compressed_files/' + test_name + '.freqs',
                                                                             "wb") as fout:
             fout.write(fin.read())
 
@@ -155,7 +157,7 @@ class Shazam:
                 fout.write(fin.read())
 
         test_name = self.test_file.split(".")[0]
-        with open("Test/"+test_name+".freqs", mode="rb") as fin, bz2.open('Compressed_files/'+test_name+'.freqs', "wb") as fout:
+        with open(self.test_dir+'/'+test_name+".freqs", mode="rb") as fin, bz2.open('Compressed_files/'+test_name+'.freqs', "wb") as fout:
             fout.write(fin.read())
 
     def compress_zlib(self, list_Samples_Freqs, list_Concat_Files):
@@ -173,7 +175,7 @@ class Shazam:
         
         test_name = self.test_file.split(".")[0]
         for i in list_Concat_Files:
-            file = open("Test/"+test_name+".freqs", "rb")
+            file = open(self.test_dir+'/'+test_name+".freqs", "rb")
             compressed = zlib.compress(file.read())
             with open('Compressed_files/' + test_name + '.freqs', "wb") as fw:
                 fw.write(compressed)
@@ -203,7 +205,7 @@ class Shazam:
                 fout.write(fin.read())
 
         test_name = self.test_file.split(".")[0]
-        with open("Test/" + test_name + ".freqs", mode="rb") as fin, lzma.open('Compressed_files/' + test_name + '.freqs',
+        with open(self.test_dir+'/'+test_name+".freqs", mode="rb") as fin, lzma.open('Compressed_files/' + test_name + '.freqs',
                                                                             "wb") as fout:
             fout.write(fin.read())
 
@@ -242,25 +244,26 @@ class Shazam:
 
 
 if __name__ == '__main__':
-    test_path = None #will be passed as arg by terminal
-
-    try:
-        test_path = sys.argv[1]
-        compressor = sys.argv[2]
-
-
-    except Exception as err:
-        print("Usage: python3 src/main.py Test/<test file> compressor")
-        print("The compressor must be either all, lzma, gzip, bz2 or zlib")
-        sys.exit()
+    # Command line arguments
+    cli_parser = argparse.ArgumentParser()
+    cli_parser.add_argument("-t", "--test", required=True, help="Enter the file path")
+    cli_parser.add_argument("-c", "--compressor", default="gzip", help="Choose the compressor method ('gzip' , 'lzma', 'bz2', 'zlib') or 'all' if you want to test all of them. Default 'gzip'")
+    args = cli_parser.parse_args()
+    
+    test_path = args.test
+    compressor = args.compressor
 
     begin = time.time()
-    test_file = test_path.split("/")[-1]
-    if test_file and compressor != "all":
-        sha = Shazam(test_file, compressor)
+    test_list = test_path.rsplit('/', 1)
+    test_dir = test_list[0]
+    test_file = test_list[-1]
+
+    list_compressors = ["lzma","gzip","bz2","zlib"]
+    if test_file and compressor in list_compressors:
+        sha = Shazam(test_file, compressor, test_dir)
         res = sha.run()
 
-        print("Result: {}".format(res[0]))
+        print("Result: {}".format(res[0][2]))
         print("Time: {} sec".format(time.time() - begin))
         # Clean paths
         paths = ["Compressed_concat_files", "Concat_files", "Compressed_files"]
@@ -268,12 +271,9 @@ if __name__ == '__main__':
             sha.cleanPath(p)
 
     elif test_file and compressor == "all":
-
-        list_compressors = ["lzma","gzip","bz2","zlib"]
-
         dict_results = {}
         for compressor in list_compressors:
-            sha = Shazam(test_file, compressor)
+            sha = Shazam(test_file, compressor, test_dir)
             res = sha.run()
 
             aux_count = 0
@@ -291,12 +291,12 @@ if __name__ == '__main__':
 
         result = min(dict_results, key=dict_results.get)
 
-
-        print("Result: {}".format(result.split("_")))
+        print("Result: {}".format(result.split("_")[1]))
         print("Time: {} sec".format(time.time() - begin))
         # Clean paths
         paths = ["Compressed_concat_files", "Concat_files", "Compressed_files"]
         for p in paths:
             sha.cleanPath(p)
 
-
+    else:
+        print("Compressor not supported!")
