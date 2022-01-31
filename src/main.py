@@ -70,7 +70,7 @@ class Shazam:
             subprocess.Popen([r"getMaxFreqs/bin/GetMaxFreqs.exe", "-w", destiny_file,
                             sample_file], stdout=subprocess.PIPE)  # gets freqs for all the test file
 
-        time.sleep(0.7)
+        time.sleep(1)
 
     def concatenate(self, list_Samples_Freqs):#concatenates files
 
